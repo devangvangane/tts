@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-Speech Converter</title>
+</head>
+<body>
+    <h2>Text-to-Speech Converter</h2>
+
+    <form id="tts-form">
+        <label for="text">Enter Text:</label><br>
+        <textarea id="text" name="text" rows="4" cols="50" required></textarea><br>
+
+        <label for="speed">Speed:</label>
+        <input type="number" id="speed" name="speed" min="50" max="300" step="10" value="150"><br>
+
+        <label for="pitch">Pitch:</label>
+        <input type="number" id="pitch" name="pitch" min="0.5" max="2.0" step="0.1" value="1.0"><br>
+
+        <label>Voice:</label>
+       {% for voice in voice_options %}
+        <input type="radio" id="voice{{voice.id}}" name="voice" value="{{voice.id}} required">
+        <label>{{voice.name}}</label><br>
+        {% endfor %}
+
+        <button type="submit">Convert to Speech</button>
+    </form>
+
+    <h3>Generated Audio Files</h3>
+    <ul id="file-list">
+        {% for file in files %}
+            <li id="file-{{ file }}">
+                <audio controls>
+                    <source src="/media/{{ file }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <button onclick="deleteFile('{{ file }}')">Delete</button>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        document.getElementById("tts-form").onsubmit = async function(event) {
+            event.preventDefault();
+            let formData = new FormData(this);
+
+            let response = await fetch("/text-to-speech/", {
+                method: "POST",
+                body: formData
+            });
+
+            let data = await response.json();
+            if (data.audio_url) {
+                updateFileList(data.files); // Update file list dynamically
+            } else {
+                alert("Error: " + (data.error || "Something went wrong!"));
+            }
+        };
+
+        async function deleteFile(fileName) {
+            let formData = new FormData();
+            formData.append("file_name", fileName);
+
+            let response = await fetch("/delete-audio/", {
+                method: "POST",
+                body: formData
+            });
+
+            let data = await response.json();
+            if (data.message) {
+                updateFileList(data.files); // Update file list after deletion
+            } else {
+                alert("Error: " + (data.error || "Something went wrong!"));
+            }
+        }
+
+        function updateFileList(files) {
+            let fileList = document.getElementById("file-list");
+            fileList.innerHTML = ""; // Clear existing list
+
+            files.forEach(file => {
+                let listItem = document.createElement("li");
+                listItem.id = "file-" + file;
+                listItem.innerHTML = `
+                    <audio controls>
+                        <source src="/media/${file}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <button onclick="deleteFile('${file}')">Delete</button>
+                `;
+                fileList.appendChild(listItem);
+            });
+        }
+    </script>
+</body>
+</html>

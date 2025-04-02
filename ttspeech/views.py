@@ -14,21 +14,17 @@ if not os.path.exists(MEDIA_FOLDER):
 @csrf_exempt
 def text_to_speech(request):
     """Converts text to speech with pitch & speed settings, and saves the file"""
-    engine = pyttsx3.init()
-
-    voices = engine.getProperty("voices")
     if request.method == "POST":
         text = request.POST.get("text")
         speed = float(request.POST.get("speed", 150))  # Default to 150 WPM
         pitch = float(request.POST.get("pitch", 1.0))  # Default pitch
-        voice = request.POST.get("voice")
 
-        if not (text or voice) :
+        if not text:
             return JsonResponse({"error": "Text field is required."}, status=400)
 
+        engine = pyttsx3.init()
         engine.setProperty("rate", speed)  # Adjust speaking rate
         engine.setProperty("pitch", pitch)  # Adjust pitch (Note: Some engines might not support pitch)
-        engine.setProperty("voice",voice)
 
         file_name = f"output_{len(os.listdir(MEDIA_FOLDER)) + 1}.mp3"
         file_path = os.path.join(MEDIA_FOLDER, file_name)
@@ -41,9 +37,7 @@ def text_to_speech(request):
         return JsonResponse({"audio_url": f"/media/{file_name}", "files": files})
 
     files = [f for f in os.listdir(MEDIA_FOLDER) if f.endswith(".mp3")]
-
-    voice_options = [{"id": voice.id, "name": voice.name} for voice in voices]
-    return render(request, "index.html", {"files": files, "voice_options": voice_options})
+    return render(request, "index.html", {"files": files})
 
 
 @csrf_exempt

@@ -3,39 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text-to-Speech Converter</title>
+    <title>Multi-Function Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h2 {
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            padding-right: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            text-align: left;
+            width: 60%;
+        }
+        textarea, input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        label {
+            font-weight: bold;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            border: none;
+            background: #28a745;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .nav {
+            margin-bottom: 20px;
+        }
+        .nav button {
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+        }
+        .nav button.active {
+            background: white;
+            color: #007bff;
+            border: 2px solid #007bff;
+        }
+        .file-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px;
+        }
+        .file-list li {
+            background: white;
+            padding: 10px;
+            margin: 10px auto;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        audio {
+            width: 70%;
+        }
+        .delete-btn {
+            background: #dc3545;
+            padding: 5px 10px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .delete-btn:hover {
+            background: #c82333;
+        }
+    </style>
 </head>
 <body>
-    <h2>Text-to-Speech Converter</h2>
 
-    <form id="tts-form">
-        <label for="text">Enter Text:</label><br>
-        <textarea id="text" name="text" rows="4" cols="50" required></textarea><br>
+    <h2>Multi-Function Converter</h2>
 
-        <label for="speed">Speed:</label>
-        <input type="number" id="speed" name="speed" min="50" max="300" step="10" value="150"><br>
+    <!-- Navigation -->
+    <div class="nav">
+        <button class="{% if functionality == 'tts' %}active{% endif %}" onclick="window.location.href='/?functionality=tts'">Text-to-Speech</button>
+        <button class="{% if functionality == 'translate' %}active{% endif %}" onclick="window.location.href='/?functionality=translate'">Translation</button>
+        <button class="{% if functionality == 'file-to-speech' %}active{% endif %}" onclick="window.location.href='/?functionality=file-to-speech'">File-to-Speech</button>
+    </div>
 
-        <label for="pitch">Pitch:</label>
-        <input type="number" id="pitch" name="pitch" min="0.5" max="2.0" step="0.1" value="1.0"><br>
+    <div class="container">
+        {% if functionality == "tts" %}
+            <h3>Text-to-Speech</h3>
+            <form id="tts-form">
+                <label for="text">Enter Text:</label>
+                <textarea id="text" name="text" rows="4" required></textarea>
 
-        <button type="submit">Convert to Speech</button>
-    </form>
+                <label for="speed">Speed:</label>
+                <input type="number" id="speed" name="speed" min="50" max="300" step="10" value="150">
+
+                <label for="pitch">Pitch:</label>
+                <input type="number" id="pitch" name="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
+
+                <button type="submit">Convert to Speech</button>
+            </form>
+
+        {% elif functionality == "file-to-speech" %}
+            <h3>File-to-Speech</h3>
+            <form id="file-upload-form" enctype="multipart/form-data">
+                <input type="file" id="file" name="file" accept=".pdf,.docx" required>
+
+                <label for="speed">Speed:</label>
+                <input type="number" id="speed" name="speed" min="50" max="300" step="10" value="150">
+
+                <label for="pitch">Pitch:</label>
+                <input type="number" id="pitch" name="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
+
+                <button type="submit">Convert</button>
+            </form>
+        {% endif %}
+    </div>
 
     <h3>Generated Audio Files</h3>
-    <ul id="file-list">
-        {% for file in files %}
-            <li id="file-{{ file }}">
-                <audio controls>
-                    <source src="/media/{{ file }}" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-                <button onclick="deleteFile('{{ file }}')">Delete</button>
-            </li>
-        {% endfor %}
-    </ul>
+        <ul id="file-list" class="file-list">
+            {% for file in files %}
+                <li id="file-{{ file }}">
+                    <audio controls>
+                        <source src="/media/{{ file }}" type="audio/mpeg">
+                    </audio>
+                    <button class="delete-btn" onclick="deleteFile('{{ file }}')">Delete</button>
+                </li>
+            {% endfor %}
+        </ul>
 
     <script>
-        document.getElementById("tts-form").onsubmit = async function(event) {
+        // Text-to-Speech Submission
+        document.getElementById("tts-form")?.addEventListener("submit", async function(event) {
             event.preventDefault();
             let formData = new FormData(this);
 
@@ -46,12 +163,31 @@
 
             let data = await response.json();
             if (data.audio_url) {
-                updateFileList(data.files); // Update file list dynamically
+                updateFileList(data.files);
             } else {
                 alert("Error: " + (data.error || "Something went wrong!"));
             }
-        };
+        });
 
+        // File-to-Speech Submission
+        document.getElementById("file-upload-form")?.addEventListener("submit", async function(event) {
+            event.preventDefault();
+            let formData = new FormData(this);
+
+            let response = await fetch("/file-to-speech/", {
+                method: "POST",
+                body: formData
+            });
+
+            let data = await response.json();
+            if (data.audio_url) {
+                updateFileList(data.files); // ✅ Update the generated files list
+            } else {
+                alert("Error: " + (data.error || "Something went wrong!"));
+            }
+        });
+
+        // Delete Audio File
         async function deleteFile(fileName) {
             let formData = new FormData();
             formData.append("file_name", fileName);
@@ -63,7 +199,7 @@
 
             let data = await response.json();
             if (data.message) {
-                updateFileList(data.files); // Update file list after deletion
+                updateFileList(data.files);
             } else {
                 alert("Error: " + (data.error || "Something went wrong!"));
             }
@@ -71,7 +207,7 @@
 
         function updateFileList(files) {
             let fileList = document.getElementById("file-list");
-            fileList.innerHTML = ""; // Clear existing list
+            fileList.innerHTML = "";
 
             files.forEach(file => {
                 let listItem = document.createElement("li");
@@ -79,13 +215,13 @@
                 listItem.innerHTML = `
                     <audio controls>
                         <source src="/media/${file}" type="audio/mpeg">
-                        Your browser does not support the audio element.
                     </audio>
-                    <button onclick="deleteFile('${file}')">Delete</button>
+                    <button class="delete-btn" onclick="deleteFile('${file}')">Delete</button>
                 `;
                 fileList.appendChild(listItem);
             });
         }
     </script>
+
 </body>
 </html>

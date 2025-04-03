@@ -1,4 +1,7 @@
 import os
+from PIL import Image
+
+import pytesseract as pytesseract
 import pyttsx3
 import docx
 import PyPDF2
@@ -8,11 +11,21 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 
-MEDIA_FOLDER = os.path.join(settings.BASE_DIR, "media")
-if not os.path.exists(MEDIA_FOLDER):
-    os.makedirs(MEDIA_FOLDER)
 
+# Media folder for audio storage
+MEDIA_FOLDER = os.path.join(settings.BASE_DIR, "media")
+os.makedirs(MEDIA_FOLDER, exist_ok=True)
+
+# Initialize TTS Engine
 engine = pyttsx3.init()
+
+# Fetch available voices
+voices = engine.getProperty("voices")
+VOICE_MAP = {
+    "default": None,  # Uses system default voice
+    "male": 0,        # First available voice
+    "female": 1,      # Second available voice (if available)
+}
 
 def home(request):
     """Render homepage with all generated files."""
@@ -25,15 +38,21 @@ def home(request):
 def text_to_speech(request):
     """Convert text input to speech and return updated file list."""
     if request.method == "POST":
-        text = request.POST.get("text")
+        text = request.POST.get("text", "").strip()
         speed = float(request.POST.get("speed", 150))
         pitch = float(request.POST.get("pitch", 1.0))
+        voice = request.POST.get("voice", "default")
 
-        if not text.strip():
+        if not text:
             return JsonResponse({"error": "Text field is required."}, status=400)
 
+        # Set voice properties
         engine.setProperty("rate", speed)
         engine.setProperty("pitch", pitch)
+        # print(VOICE_MAP)
+        # Assign voice if available
+        if voice in VOICE_MAP and VOICE_MAP[voice] is not None and VOICE_MAP[voice] < len(voices):
+            engine.setProperty("voice", voices[VOICE_MAP[voice]].id)
 
         file_name = f"speech_{len(os.listdir(MEDIA_FOLDER)) + 1}.mp3"
         file_path = os.path.join(MEDIA_FOLDER, file_name)
@@ -53,6 +72,7 @@ def file_to_speech(request):
         file_extension = uploaded_file.name.split(".")[-1].lower()
         speed = float(request.POST.get("speed", 150))
         pitch = float(request.POST.get("pitch", 1.0))
+        voice = request.POST.get("voice", "default")
 
         file_path = os.path.join(MEDIA_FOLDER, uploaded_file.name)
         with default_storage.open(file_path, "wb+") as destination:
@@ -76,8 +96,12 @@ def file_to_speech(request):
             if not extracted_text.strip():
                 return JsonResponse({"error": "No text found in file."}, status=400)
 
+            # Set TTS properties
             engine.setProperty("rate", speed)
             engine.setProperty("pitch", pitch)
+            print(VOICE_MAP)
+            if voice in VOICE_MAP and VOICE_MAP[voice] is not None and VOICE_MAP[voice] < len(voices):
+                engine.setProperty("voice", voices[VOICE_MAP[voice]].id)
 
             audio_filename = f"file_speech_{len(os.listdir(MEDIA_FOLDER)) + 1}.mp3"
             audio_filepath = os.path.join(MEDIA_FOLDER, audio_filename)
@@ -95,16 +119,59 @@ def file_to_speech(request):
 
 
 @csrf_exempt
+def image_to_speech(request):
+    """Extract text from an image and convert it to speech."""
+    if request.method == "POST" and request.FILES.get("image"):
+        image_file = request.FILES["image"]
+        file_extension = image_file.name.split(".")[-1].lower()
+
+        # Save uploaded image
+        image_path = os.path.join(MEDIA_FOLDER, image_file.name)
+        with default_storage.open(image_path, "wb+") as destination:
+            for chunk in image_file.chunks():
+                destination.write(chunk)
+
+        try:
+            # Open and process the image
+            image = Image.open(image_path)
+            extracted_text = pytesseract.image_to_string(image)
+
+            if not extracted_text.strip():
+                return JsonResponse({"error": "No readable text found in the image."}, status=400)
+
+            # Generate speech file
+            audio_filename = f"image_speech_{len(os.listdir(MEDIA_FOLDER)) + 1}.mp3"
+            audio_filepath = os.path.join(MEDIA_FOLDER, audio_filename)
+
+            engine.save_to_file(extracted_text, audio_filepath)
+            engine.runAndWait()
+            print(audio_filepath)
+            return JsonResponse({"audio_url": f"/media/{audio_filename}"})
+
+        except Exception as e:
+            return JsonResponse({"error": f"Error: {str(e)}"}, status=500)
+
+    return JsonResponse({"error": "Invalid request."}, status=400)
+
+
+@csrf_exempt
 def delete_audio(request):
     """Delete selected audio file and update the file list."""
     if request.method == "POST":
-        file_name = request.POST.get("file_name")
+        file_name = request.POST.get("file_name", "").strip()
+
+        if not file_name:
+            return JsonResponse({"error": "File name is required."}, status=400)
+
         file_path = os.path.join(MEDIA_FOLDER, file_name)
 
         if os.path.exists(file_path):
-            os.remove(file_path)
-            files = [f for f in os.listdir(MEDIA_FOLDER) if f.endswith(".mp3")]
-            return JsonResponse({"message": "File deleted.", "files": files})
+            try:
+                os.remove(file_path)
+                files = [f for f in os.listdir(MEDIA_FOLDER) if f.endswith(".mp3")]
+                return JsonResponse({"message": "File deleted successfully.", "files": files})
+            except Exception as e:
+                return JsonResponse({"error": f"Error deleting file: {str(e)}"}, status=500)
         else:
             return JsonResponse({"error": "File not found."}, status=404)
 

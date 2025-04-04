@@ -104,6 +104,7 @@
         <button class="{% if functionality == 'tts' %}active{% endif %}" onclick="window.location.href='/?functionality=tts'">Text-to-Speech</button>
         <button class="{% if functionality == 'file-to-speech' %}active{% endif %}" onclick="window.location.href='/?functionality=file-to-speech'">File-to-Speech</button>
         <button class="{% if functionality == 'image-to-speech' %}active{% endif %}" onclick="window.location.href='/?functionality=image-to-speech'">Image-to-Speech</button>
+        <button class="{% if functionality == 'ppt-to-speech' %}active{% endif %}" onclick="window.location.href='/?functionality=ppt-to-speech'">PPT-to-Speech</button>
     </div>
 
     <div class="container">
@@ -154,6 +155,27 @@
             <h3>Image-to-Speech</h3>
             <form id="image-upload-form" enctype="multipart/form-data">
                 <input type="file" id="image" name="image" accept="image/*" required>
+                <button type="submit">Convert</button>
+            </form>
+
+        {% elif functionality == "ppt-to-speech" %}
+            <h3>Ppt-to-Speech</h3>
+            <form id="ppt-upload-form" enctype="multipart/form-data">
+                <input type="file" id="file" name="ppt" accept=".ppt,.pptx" required>
+
+                <label for="speed">Speed:</label>
+                <input type="number" id="ppt-speed" name="speed" min="50" max="300" step="10" value="150">
+
+                <label for="pitch">Pitch:</label>
+                <input type="number" id="ppt-pitch" name="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
+
+                <label for="voice">Choose Voice:</label>
+                <select id="ppt-voice" name="voice">
+                    <option value="default">Default (Male)</option>
+                    <option value="male">Male Voice</option>
+                    <option value="female">Female Voice</option>
+                </select>
+
                 <button type="submit">Convert</button>
             </form>
         {% endif %}
@@ -253,6 +275,33 @@ document.getElementById("image-upload-form")?.addEventListener("submit", async f
     }
 });
 
+// Handle PPT-to-Speech Submission
+document.getElementById("ppt-upload-form")?.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const form = document.getElementById("ppt-upload-form");
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch("/pptx-to-speech/", {
+            method: "POST",
+            body: formData,
+        });
+
+        const data = await response.json();
+
+        if (data.audio_url) {
+            updateFileList(data.files);
+        } else {
+            alert("Error: " + (data.error || "Something went wrong!"));
+        }
+    } catch (err) {
+        console.error("Error:", err);
+        alert("Something went wrong during PPT-to-Speech conversion.");
+    }
+});
+
+
 // Handle File Deletion
 async function deleteFile(fileName) {
     let formData = new FormData();
@@ -270,7 +319,7 @@ async function deleteFile(fileName) {
         alert("Error: " + (data.error || "Something went wrong!"));
     }
 }
-    </script>
+</script>
 
 </body>
 </html>

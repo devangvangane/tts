@@ -59,7 +59,7 @@ def text_to_speech(request):
 
         engine.save_to_file(text, file_path)
         engine.runAndWait()
-
+        print("from server"+file_path)
         files = [f for f in os.listdir(MEDIA_FOLDER) if f.endswith(".mp3")]
         return JsonResponse({"audio_url": f"/media/{file_name}", "files": files})
 

@@ -123,7 +123,6 @@ def image_to_speech(request):
     """Extract text from an image and convert it to speech."""
     if request.method == "POST" and request.FILES.get("image"):
         image_file = request.FILES["image"]
-        file_extension = image_file.name.split(".")[-1].lower()
 
         # Save uploaded image
         image_path = os.path.join(MEDIA_FOLDER, image_file.name)
@@ -186,7 +185,7 @@ def pptx_to_speech(request):
                                 text_runs.append(full_line)
 
             extracted_text = "\n".join(text_runs)
-            print("Extracted text")
+            print(extracted_text    )
 
             if not extracted_text.strip():
                 return JsonResponse({"error": "No readable text found in the presentation."}, status=400)

@@ -114,6 +114,15 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Optional but useful in dev
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+# For collectstatic in production
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

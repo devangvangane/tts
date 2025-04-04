@@ -1,19 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-Function Converter</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+
             text-align: center;
             padding: 20px;
             background-color: #f4f4f4;
         }
+
         h2 {
             color: #333;
         }
+
+        @font-face {
+            font-family: 'CustomFont';
+            /* Replace with your font's name */
+            src: url('C:/Users/VAIDIK/Downloads/New folder (2)/tts/ttspeech/templates/fonts') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            font-family: 'CustomFont', Arial, sans-serif;
+        }
+
         .container {
             background: white;
             padding: 20px;
@@ -24,16 +39,21 @@
             text-align: left;
             width: 60%;
         }
-        textarea, input, select {
+
+        textarea,
+        input,
+        select {
             width: 100%;
             padding: 10px;
             margin: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+
         label {
             font-weight: bold;
         }
+
         button {
             margin-top: 10px;
             padding: 10px;
@@ -44,12 +64,15 @@
             cursor: pointer;
             border-radius: 5px;
         }
+
         button:hover {
             background: #218838;
         }
+
         .nav {
             margin-bottom: 20px;
         }
+
         .nav button {
             margin: 5px;
             background: #007bff;
@@ -59,16 +82,19 @@
             border: none;
             cursor: pointer;
         }
+
         .nav button.active {
             background: white;
             color: #007bff;
             border: 2px solid #007bff;
         }
+
         .file-list {
             list-style-type: none;
             padding: 0;
             margin: 20px;
         }
+
         .file-list li {
             background: white;
             padding: 10px;
@@ -79,9 +105,11 @@
             align-items: center;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
+
         audio {
             width: 70%;
         }
+
         .delete-btn {
             background: #dc3545;
             padding: 5px 10px;
@@ -90,236 +118,290 @@
             cursor: pointer;
             border-radius: 5px;
         }
+
         .delete-btn:hover {
             background: #c82333;
         }
     </style>
 </head>
+
 <body>
 
     <h2>Multi-Function Converter</h2>
 
     <!-- Navigation -->
     <div class="nav">
-        <button class="{% if functionality == 'tts' %}active{% endif %}" onclick="window.location.href='/?functionality=tts'">Text-to-Speech</button>
-        <button class="{% if functionality == 'file-to-speech' %}active{% endif %}" onclick="window.location.href='/?functionality=file-to-speech'">File-to-Speech</button>
-        <button class="{% if functionality == 'image-to-speech' %}active{% endif %}" onclick="window.location.href='/?functionality=image-to-speech'">Image-to-Speech</button>
-        <button class="{% if functionality == 'ppt-to-speech' %}active{% endif %}" onclick="window.location.href='/?functionality=ppt-to-speech'">PPT-to-Speech</button>
+        <button class="{% if functionality == 'tts' %}active{% endif %}"
+            onclick="window.location.href='/?functionality=tts'">Text-to-Speech</button>
+        <button class="{% if functionality == 'file-to-speech' %}active{% endif %}"
+            onclick="window.location.href='/?functionality=file-to-speech'">File-to-Speech</button>
+        <button class="{% if functionality == 'image-to-speech' %}active{% endif %}"
+            onclick="window.location.href='/?functionality=image-to-speech'">Image-to-Speech</button>
+        <button class="{% if functionality == 'ppt-to-speech' %}active{% endif %}"
+            onclick="window.location.href='/?functionality=ppt-to-speech'">PPT-to-Speech</button>
+
     </div>
 
     <div class="container">
         {% if functionality == "tts" %}
-            <h3>Text-to-Speech</h3>
-            <form id="tts-form">
-                <label for="text">Enter Text:</label>
-                <textarea id="text" name="text" rows="4" required></textarea>
+        <h3>Text-to-Speech</h3>
+        <form id="tts-form">
+            <label for="text">Enter Text:</label>
+            <textarea id="text" name="text" rows="4" required></textarea>
 
-                <label for="speed">Speed:</label>
-                <input type="number" id="speed" name="speed" min="50" max="300" step="10" value="150">
+            <label for="speed">Speed:</label>
+            <input type="number" id="speed" name="speed" min="50" max="300" step="10" value="150">
 
-                <label for="pitch">Pitch:</label>
-                <input type="number" id="pitch" name="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
+            <label for="pitch">Pitch:</label>
+            <input type="number" id="pitch" name="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
 
-                <label for="voice">Choose Voice:</label>
-                <select id="voice" name="voice">
-                    <option value="default">Default (Male)</option>
-                    <option value="male">Male Voice</option>
-                    <option value="female">Female Voice</option>
-                </select>
+            <label for="voice">Choose Voice:</label>
+            <select id="voice" name="voice">
+                <option value="default">Default (Male)</option>
+                <option value="male">Male Voice</option>
+                <option value="female">Female Voice</option>
+            </select>
 
-                <button type="submit">Convert to Speech</button>
-            </form>
+            <button type="submit">Convert to Speech</button>
+        </form>
 
         {% elif functionality == "file-to-speech" %}
-            <h3>File-to-Speech</h3>
-            <form id="file-upload-form" enctype="multipart/form-data">
-                <input type="file" id="file" name="file" accept=".pdf,.docx" required>
+        <h3>File-to-Speech</h3>
+        <form id="file-upload-form" enctype="multipart/form-data">
+            <input type="file" id="file" name="file" accept=".pdf,.docx" required>
 
-                <label for="speed">Speed:</label>
-                <input type="number" id="speed" name="speed" min="50" max="300" step="10" value="150">
+            <label for="speed">Speed:</label>
+            <input type="number" id="speed" name="speed" min="50" max="300" step="10" value="150">
 
-                <label for="pitch">Pitch:</label>
-                <input type="number" id="pitch" name="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
+            <label for="pitch">Pitch:</label>
+            <input type="number" id="pitch" name="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
 
-                <label for="voice">Choose Voice:</label>
-                <select id="voice" name="voice">
-                    <option value="default">Default (Male)</option>
-                    <option value="male">Male Voice</option>
-                    <option value="female">Female Voice</option>
-                </select>
+            <label for="voice">Choose Voice:</label>
+            <select id="voice" name="voice">
+                <option value="default">Default (Male)</option>
+                <option value="male">Male Voice</option>
+                <option value="female">Female Voice</option>
+            </select>
 
-                <button type="submit">Convert</button>
-            </form>
+            <button type="submit">Convert</button>
+        </form>
 
         {% elif functionality == "image-to-speech" %}
-            <h3>Image-to-Speech</h3>
-            <form id="image-upload-form" enctype="multipart/form-data">
-                <input type="file" id="image" name="image" accept="image/*" required>
-                <button type="submit">Convert</button>
-            </form>
+        <h3>Image-to-Speech</h3>
+        <form id="image-upload-form" enctype="multipart/form-data">
+            <input type="file" id="image" name="image" accept="image/*" required>
+            <button type="submit">Convert</button>
+        </form>
 
         {% elif functionality == "ppt-to-speech" %}
-            <h3>Ppt-to-Speech</h3>
-            <form id="ppt-upload-form" enctype="multipart/form-data">
-                <input type="file" id="file" name="ppt" accept=".ppt,.pptx" required>
+        <h3>Ppt-to-Speech</h3>
+        <form id="ppt-upload-form" enctype="multipart/form-data">
+            <input type="file" id="file" name="ppt" accept=".ppt,.pptx" required>
 
-                <label for="speed">Speed:</label>
-                <input type="number" id="ppt-speed" name="speed" min="50" max="300" step="10" value="150">
+            <label for="speed">Speed:</label>
+            <input type="number" id="ppt-speed" name="speed" min="50" max="300" step="10" value="150">
 
-                <label for="pitch">Pitch:</label>
-                <input type="number" id="ppt-pitch" name="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
+            <label for="pitch">Pitch:</label>
+            <input type="number" id="ppt-pitch" name="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
 
-                <label for="voice">Choose Voice:</label>
-                <select id="ppt-voice" name="voice">
-                    <option value="default">Default (Male)</option>
-                    <option value="male">Male Voice</option>
-                    <option value="female">Female Voice</option>
-                </select>
+            <label for="voice">Choose Voice:</label>
+            <select id="ppt-voice" name="voice">
+                <option value="default">Default (Male)</option>
+                <option value="male">Male Voice</option>
+                <option value="female">Female Voice</option>
+            </select>
 
-                <button type="submit">Convert</button>
-            </form>
+            <button type="submit">Convert</button>
+        </form>
         {% endif %}
     </div>
 
     <h3>Generated Audio Files</h3>
     <ul id="file-list" class="file-list">
         {% for file in files %}
-            <li id="file-{{ file }}">
-                <audio controls>
-                    <source src="/media/{{ file }}" type="audio/mpeg">
-                </audio>
-                <button class="delete-btn" onclick="deleteFile('{{ file }}')">Delete</button>
-            </li>
+        <li id="file-{{ file }}">
+            <audio controls>
+                <source src="/media/{{ file }}" type="audio/mpeg">
+            </audio>
+            <button class="delete-btn" onclick="deleteFile('{{ file }}')">Delete</button>
+        </li>
         {% endfor %}
     </ul>
 
     <script>
         async function updateFileList(files) {
-    let fileList = document.getElementById("file-list");
-    fileList.innerHTML = ""; // Clear current list
+            let fileList = document.getElementById("file-list");
+            fileList.innerHTML = ""; // Clear current list
 
-    files.forEach(file => {
-        let listItem = document.createElement("li");
-        listItem.id = `file-${file}`;
-        listItem.innerHTML = `
+            files.forEach(file => {
+                let listItem = document.createElement("li");
+                listItem.id = `file-${file}`;
+                listItem.innerHTML = `
             <audio controls>
                 <source src="/media/${file}" type="audio/mpeg">
             </audio>
             <button class="delete-btn" onclick="deleteFile('${file}')">Delete</button>
         `;
-        fileList.appendChild(listItem);
-    });
-}
+                fileList.appendChild(listItem);
+            });
+        }
 
-// Handle Text-to-Speech Submission
-document.getElementById("tts-form")?.addEventListener("submit", async function(event) {
-    event.preventDefault();
-    let formData = new FormData(this);
+        // Handle Text-to-Speech Submission
+        document.getElementById("tts-form")?.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            let formData = new FormData(this);
 
-    let response = await fetch("/text-to-speech/", {
-        method: "POST",
-        body: formData
-    });
+            let response = await fetch("/text-to-speech/", {
+                method: "POST",
+                body: formData
+            });
 
-    let data = await response.json();
-    if (data.files) {
-        updateFileList(data.files); // Update file list without refresh
-    } else {
-        alert("Error: " + (data.error || "Something went wrong!"));
-    }
-});
+            let data = await response.json();
+            console.log(data);
+            if (data.files) {
+                updateFileList(data.files); // Update file list without refresh
+            } else {
+                alert("Error: " + (data.error || "Something went wrong!"));
+            }
+        });
 
-// Handle File-to-Speech Submission
-document.getElementById("file-upload-form")?.addEventListener("submit", async function(event) {
-    event.preventDefault();
-    let formData = new FormData(this);
+        // Handle File-to-Speech Submission
+        document.getElementById("file-upload-form")?.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            let formData = new FormData(this);
 
-    let response = await fetch("/file-to-speech/", {
-        method: "POST",
-        body: formData
-    });
+            let response = await fetch("/file-to-speech/", {
+                method: "POST",
+                body: formData
+            });
 
-    let data = await response.json();
+            let data = await response.json();
 
-    console.log(data);
-    if (data.files) {
-        updateFileList(data.files);
-    } else {
-        alert("Error: " + (data.error || "Something went wrong!"));
-    }
-});
+            console.log(data);
+            if (data.files) {
+                updateFileList(data.files);
+            } else {
+                alert("Error: " + (data.error || "Something went wrong!"));
+            }
+        });
 
-// Handle Image-to-Speech Submission
-document.getElementById("image-upload-form")?.addEventListener("submit", async function(event) {
-    event.preventDefault();
-    let formData = new FormData(this);
+        // Handle Image-to-Speech Submission
+        document.getElementById("image-upload-form")?.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            let formData = new FormData(this);
 
-    try {
-        let response = await fetch("/image-to-speech/", {
-            method: "POST",
-            body: formData
+            try {
+                let response = await fetch("/image-to-speech/", {
+                    method: "POST",
+                    body: formData
+                });
+
+                let data = await response.json();
+                console.log("Response from backend:", data);
+
+                if (data.audio_url) {
+                    let fileList = document.getElementById("file-list");
+                    let listItem = document.createElement("li");
+                    listItem.innerHTML = `
+                <audio controls>
+                    <source src="${data.audio_url}" type="audio/mpeg">
+                </audio>
+                <button class="delete-btn" onclick="deleteFile('${data.audio_url}')">Delete</button>
+            `;
+                    fileList.appendChild(listItem);
+                } else {
+                    alert("Error: " + (data.error || "Something went wrong!"));
+                }
+            } catch (error) {
+                alert("Something went wrong! Check the console for errors.");
+                console.error("Image-to-Speech Error:", error);
+            }
+        });
+
+        // Handle File Deletion
+        async function deleteFile(fileName) {
+            let formData = new FormData();
+            formData.append("file_name", fileName);
+
+            let response = await fetch("/delete-audio/", {
+                method: "POST",
+                body: formData
+            });
+
+            let data = await response.json();
+            if (data.files) {
+                updateFileList(data.files); // Update file list dynamically
+            } else {
+                alert("Error: " + (data.error || "Something went wrong!"));
+            }
+        }
+
+
+        // Handle PPT-to-Speech Submission
+        async function deleteFile(fileName) {
+            let formData = new FormData();
+            formData.append("file_name", fileName);
+
+            let response = await fetch("/delete-audio/", {
+                method: "POST",
+                body: formData
+            });
+
+            let data = await response.json();
+            if (data.files) {
+                updateFileList(data.files); // Update file list dynamically
+            } else {
+                alert("Error: " + (data.error || "Something went wrong!"));
+            }
+        }
+
+
+        // Handle PPT-to-Speech Submission
+        document.getElementById("ppt-upload-form")?.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const form = document.getElementById("ppt-upload-form");
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch("/pptx-to-speech/", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (data.audio_url) {
+                    updateFileList(data.files);
+                } else {
+                    alert("Error: " + (data.error || "Something went wrong!"));
+                }
+            } catch (err) {
+                console.error("Error:", err);
+                alert("Something went wrong during PPT-to-Speech conversion.");
+            }
         });
 
 
+        // Handle File Deletion
+        async function deleteFile(fileName) {
+            let formData = new FormData();
+            formData.append("file_name", fileName);
 
-        let data = await response.json();
-        console.log("hello" +data);
-        if (data.files) {
-            updateFileList(data.files);
-        } else {
-            alert("Error: " + (data.error || "Something went wrong!"));
+            let response = await fetch("/delete-audio/", {
+                method: "POST",
+                body: formData
+            });
+
+            let data = await response.json();
+            if (data.files) {
+                updateFileList(data.files); // Update file list dynamically
+            } else {
+                alert("Error: " + (data.error || "Something went wrong!"));
+            }
         }
-    } catch (error) {
-        alert("Something went wrong! Check the console for errors.");
-        console.error("Image-to-Speech Error:", error);
-    }
-});
-
-// Handle PPT-to-Speech Submission
-document.getElementById("ppt-upload-form")?.addEventListener("submit", async function (e) {
-    e.preventDefault();
-
-    const form = document.getElementById("ppt-upload-form");
-    const formData = new FormData(form);
-
-    try {
-        const response = await fetch("/pptx-to-speech/", {
-            method: "POST",
-            body: formData,
-        });
-
-        const data = await response.json();
-
-        if (data.audio_url) {
-            updateFileList(data.files);
-        } else {
-            alert("Error: " + (data.error || "Something went wrong!"));
-        }
-    } catch (err) {
-        console.error("Error:", err);
-        alert("Something went wrong during PPT-to-Speech conversion.");
-    }
-});
-
-
-// Handle File Deletion
-async function deleteFile(fileName) {
-    let formData = new FormData();
-    formData.append("file_name", fileName);
-
-    let response = await fetch("/delete-audio/", {
-        method: "POST",
-        body: formData
-    });
-
-    let data = await response.json();
-    if (data.files) {
-        updateFileList(data.files); // Update file list dynamically
-    } else {
-        alert("Error: " + (data.error || "Something went wrong!"));
-    }
-}
-</script>
+    </script>
 
 </body>
+
 </html>
